@@ -3,6 +3,9 @@ import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JButton;
+import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -20,6 +23,8 @@ public class GUI {
 
     private JTextField input;
     private JLabel output;
+    private JTextArea error;
+    private JScrollPane errorScroll;
     private JButton plus;
     private JButton minus;
     private JButton times;
@@ -30,6 +35,7 @@ public class GUI {
     private JButton inv;
     private JButton lparen;
     private JButton rparen;
+    private JButton clearError;
 
     public GUI() {
         calc = new Calculator();
@@ -51,81 +57,40 @@ public class GUI {
                     // new text written
                     calc.setInput(input.getText());
                     output.setText(String.valueOf(calc.getOutput()));
+                    error.append(calc.getError());
                 }
             }
         });
 
         output = new JLabel("0.");
         output.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 32));
+        output.setPreferredSize(new Dimension(800, 100));
 
-        plus = new JButton("+");
-        plus.setPreferredSize(new Dimension(80,50));
-        plus.addActionListener(new ActionListener() {
+        error = new JTextArea(5, 80);
+        error.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        error.setEditable(false);
+
+        errorScroll = new JScrollPane(error);
+        errorScroll
+            .setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        plus = genButton("+");
+        minus = genButton("-");
+        times = genButton("*");
+        divide = genButton("/");
+        sin = genButton("sin(");
+        cos = genButton("cos(");
+        tan = genButton("tan(");
+        inv = genButton("1/(");
+        lparen = genButton("(");
+        rparen = genButton(")");
+
+        clearError = new JButton("Clear Error");
+        clearError.setPreferredSize(new Dimension(160,50));
+        clearError.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " + ");
-            }
-        });
-        minus = new JButton("-");
-        minus.setPreferredSize(new Dimension(80,50));
-        minus.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " - ");
-            }
-        });
-        times = new JButton("*");
-        times.setPreferredSize(new Dimension(80,50));
-        times.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " * ");
-            }
-        });
-        divide = new JButton("/");
-        divide.setPreferredSize(new Dimension(80,50));
-        divide.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " / ");
-            }
-        });
-        sin = new JButton("sin(");
-        sin.setPreferredSize(new Dimension(80,50));
-        sin.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " sin( ");
-            }
-        });
-        cos = new JButton("cos(");
-        cos.setPreferredSize(new Dimension(80,50));
-        cos.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " cos( ");
-            }
-        });
-        tan = new JButton("tan(");
-        tan.setPreferredSize(new Dimension(80,50));
-        tan.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " tan( ");
-            }
-        });
-        inv = new JButton("1/(");
-        inv.setPreferredSize(new Dimension(80,50));
-        inv.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " 1/( ");
-            }
-        });
-        lparen = new JButton("(");
-        lparen.setPreferredSize(new Dimension(80,50));
-        lparen.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " ( ");
-            }
-        });
-        rparen = new JButton("(");
-        rparen.setPreferredSize(new Dimension(80,50));
-        rparen.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                input.setText(input.getText() + " ) ");
+                error.setText("");
+                calc.clearError();
             }
         });
 
@@ -141,8 +106,21 @@ public class GUI {
         c.add(lparen);
         c.add(rparen);
         c.add(output);
+        c.add(errorScroll);
+        c.add(clearError);
 
         frame.pack();
+    }
+
+    private JButton genButton(String label) {
+        JButton b = new JButton(label);
+        b.setPreferredSize(new Dimension(80,50));
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                input.setText(input.getText() + " " + label + " ");
+            }
+        });
+        return b;
     }
 
     public void show() {
