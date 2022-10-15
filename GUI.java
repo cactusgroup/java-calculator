@@ -9,11 +9,11 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.text.Caret;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.Dimension;
-import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
 
@@ -109,12 +109,19 @@ public class GUI {
         c.add(errorScroll);
         c.add(clearError);
 
+        frame.addWindowFocusListener(new WindowAdapter() {
+            public void windowGainedFocus(WindowEvent e) {
+                input.requestFocusInWindow();
+            }
+        });
+
         frame.pack();
     }
 
     private JButton genButton(String label) {
         JButton b = new JButton(label);
         b.setPreferredSize(new Dimension(80,50));
+        b.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
         b.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 input.setText(input.getText() + " " + label + " ");

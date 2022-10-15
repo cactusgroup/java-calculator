@@ -1,27 +1,41 @@
-import java.util.ArrayList;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class Calculator {
     private String input;
     private double output;
     private String error;
 
-    private Op root;
-
     public Calculator() {
         input = "";
         output = 0.;
         error = "";
-        root = new Op();
     }
 
+    
+    private BufferedWriter bw = null;
     private void evaluate() {
-        Op.destroy(root);
-        Op index = root;
+        try {
+            bw = new BufferedWriter(new FileWriter(new File("./instructions.txt")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         len = offset = wordno = 0;
-        lex();
+        lookahead = TokenType.INVALID;
+        expression();
+        try {
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // lexer
+    // TokenType lex()
+    // boolean match(TokenType)
+    // void advance()
     private final int MAX_CHARS = 50;
     private char[] text   = new char[MAX_CHARS];
     private int    len    = 0;
@@ -30,11 +44,16 @@ public class Calculator {
     private TokenType lex() {
         int current = offset + len;
         for (; current != input.length(); ++current) {
-            text[0] = input.charAt(current);
+            try {
+                text[0] = input.charAt(current);
+            } catch (Exception e) {
+                // end of input
+                return TokenType.EOI;
+            }
             offset = current;
             len = 1;
 
-            if (input.length() > 1) {
+            if (input.length() - current > 1) {
                 text[1] = input.charAt(current + 1);
                 if (Character.isWhitespace(text[0])
                     && !Character.isWhitespace(text[1])) {
@@ -47,7 +66,7 @@ public class Calculator {
                 text[2] = input.charAt(current + 2);
                 text[3] = input.charAt(current + 3);
                 len = 4;
-                if (text[0] == 's' && text[1] == 'i' && text[2] == 'n' && text[3]== '(')
+                if (text[0] == 's' && text[1] == 'i' && text[2] == 'n' && text[3] == '(')
                 {   return TokenType.SIN;   }
                 else if (text[0] == 'c' && text[1] == 'o' && text[2] == 's' && text[3] == '(')
                 {   return TokenType.COS;   }
@@ -71,11 +90,8 @@ public class Calculator {
                 {
                     if (!Character.isDigit(input.charAt(current))) {
                         error += "Invalid character " + input.charAt(current) + " at word number " + wordno + "\n\n";
-                    } else if (text[0] == '1' && text[1] == '/') {
-                        text[2] = input.charAt(current + 2);
-                        len = 3;
-                        if (text[2] = '(') { return TokenType.INV; }
-                    } else {
+                    }
+                    else {
                         while(current < input.length()
                               && Character.isDigit(input.charAt(current))) {
                             if (current - offset == MAX_CHARS) {
@@ -93,10 +109,10 @@ public class Calculator {
                 }
             }
         }
-        return TokenType.INVALID;
+        return TokenType.EOI;
     }
     
-    TokenType lookahead = TokenType.INVALID;
+    private TokenType lookahead = TokenType.INVALID;
     private boolean match(TokenType token) {
         if (lookahead == TokenType.INVALID) {
             lookahead = lex();
@@ -108,7 +124,78 @@ public class Calculator {
         lookahead = lex();
     }
 
+    // temporary name pool
+    // String newname()
+    // freename(String)
+    private String names[] = { "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
+                               "t8", "t9","t10","t11","t12","t13","t14","t15",
+                              "t16","t17","t18","t19","t20","t21","t22","t23",
+                              "t24","t25","t26","t27","t28","t29","t30","t31" };
+    private int nameidx = 0;
+    private String newname() {
+        if (nameidx >= names.length) {
+            error += wordno + ": Expression too complex\n\n";
+            
+        }
+        return names[nameidx++];
+    }
+
+    private void freename(String s) {
+        if (nameidx > 0) {
+            --nameidx;
+        } else {
+            error += wordno + ": (Internal error) Name stack underflow";
+        }
+    }
+
+    // parser
+    // expression()
+    // term()
+    // factor()
+    private void expression() {
+        if (match(TokenType.EOI)) {
+            return;
+        }
+
+        String tempvar, tempvar2;
+        term();
+        
+        while (match(TokenType.PLUS) || match(TokenType.MINUS)) {
+            advance();
+            term();
+        }
+    }
+
+    private void term() {
+        factor();
+
+        while (match(TokenType.TIMES) || match(TokenType.DIVIDE)) {
+            advance();
+            factor();
+        }
+    }
+
+    private void factor() {
+        if (match(TokenType.NUM)) {
+            advance();
+        } else if (match(TokenType.SIN) || match(TokenType.COS) ||
+                   match(TokenType.TAN) || match(TokenType.LPAREN)) {
+            advance();
+            expression();
+            if (match(TokenType.RPAREN)) {
+                advance();
+            } else {
+                error += wordno + ": Mismatched parenthesis\n\n";
+            }
+        } else {
+            error += wordno + ": Number expected\n\n";
+        }
+    }
+
     // Field modifiers
+    // setInput(String)
+    // double getOutput()
+    // String getError()
     public void setInput(String s) {
         input = s;
         evaluate();
@@ -129,6 +216,7 @@ public class Calculator {
     // for lexer, parser
     private enum TokenType {
         // Do not change the order
+        EOI,
         INVALID,
         NUM,
         PLUS,
