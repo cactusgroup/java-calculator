@@ -125,6 +125,7 @@ public class GUI {
         b.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 input.setText(input.getText() + " " + label + " ");
+                input.requestFocusInWindow();
             }
         });
         return b;
