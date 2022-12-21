@@ -88,6 +88,9 @@ public class Calculator {
                 e.printStackTrace();
             } catch (InvocationTargetException e) {
                 e.printStackTrace();
+            } finally {
+                // maybe this will do it?
+                System.gc();
             }
         }
     }
