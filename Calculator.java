@@ -56,16 +56,26 @@ public class Calculator {
 
         // compile source in Instructions.java
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        int status = compiler.run(null, null, null, file.getPath());
+        int status = compiler.run(null, null, null, "-g", file.getPath());
+        System.err.println("status = " + status);
 
         if (status == 0) { //compilation success
             // load the binary and invoke the calculate() method
             try {
                 ClassLoader loader = URLClassLoader.newInstance(
                     new URL[] { new URL("file:///" + file.getPath()) });
+                System.err.println("classloader = " + loader);
+                
                 Class<?> clazz = Class.forName("Instructions", true, loader);
+                System.err.println("class = " + clazz);
+
                 Method calculate = clazz.getDeclaredMethod("calculate", (Class<?>[]) null);
+                System.err.println("method = " + calculate);
+                
                 output = (Double) calculate.invoke(null, (Object[]) null);
+                System.err.println("noncasted output = " + calculate.invoke(null, (Object[]) null));
+                System.err.println("output = " + output);
+                System.err.println();
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
@@ -324,54 +334,5 @@ public class Calculator {
         INV,
         LPAREN,
         RPAREN;
-    }
-
-    private class Op {
-        public String value;
-        public Op left;
-        public Op middle;
-        public Op right;
-        public Op up;
-        public Op() {
-            value = "";
-            left = middle = right = up = null;
-        }
-        public boolean isLeaf() {
-            boolean lT = false, rT = false;
-            if (left != null) {
-                try {
-                    Double.parseDouble(left.value);
-                } catch (NumberFormatException ignore) {
-                    return false;
-                }
-                lT = true;
-            }
-            if (right != null) {
-                try {
-                    Double.parseDouble(right.value);
-                } catch (NumberFormatException ignore) {
-                    return false;
-                }
-                rT = true;
-            }
-            return lT && rT;
-        }
-        public static void destroy(Op root) {
-            if (root.left != null) {
-                destroy(root.left);
-                root.left = null;
-            }
-            if (root.middle != null) {
-                destroy(root.middle);
-                root.middle = null;
-            }
-            if (root.right != null) {
-                destroy(root.right);
-                root.right = null;
-            }
-            if (root.up != null) {
-                root.up = null;
-            }
-        }
     }
 }

@@ -5,11 +5,10 @@ public class Instructions {
               t16,t17,t18,t19,t20,t21,t22,t23,
               t24,t25,t26,t27,t28,t29,t30,t31;
 t0 = 1;
-t1 = 0.5;
+t1 = 2;
 t0 += t1;
-t1 = 0.25;
+t1 = 3;
 t0 += t1;
-t0 = Math.sin(t0);
        return    t0   ;
    }
 }
