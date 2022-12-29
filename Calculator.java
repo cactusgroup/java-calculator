@@ -22,7 +22,6 @@ public class Calculator {
         error = "";
     }
 
-    
     private BufferedWriter bw = null;
     private void evaluate() {
         String tempvar;
@@ -57,40 +56,22 @@ public class Calculator {
         // compile source in Instructions.java
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         int status = compiler.run(null, null, null, "-g", file.getPath());
-        System.err.println("status = " + status);
-
         if (status == 0) { //compilation success
             // load the binary and invoke the calculate() method
             try {
                 ClassLoader loader = URLClassLoader.newInstance(
-                    new URL[] { new URL("file:///" + file.getPath()) });
-                System.err.println("classloader = " + loader);
-                
+                    new URL[] { new URL("file:///" + file.getPath()) },
+                    new FailLoader(this.getClass().getClassLoader()));
                 Class<?> clazz = Class.forName("Instructions", true, loader);
-                System.err.println("class = " + clazz);
-
-                Method calculate = clazz.getDeclaredMethod("calculate", (Class<?>[]) null);
-                System.err.println("method = " + calculate);
-                
+                Method calculate =
+                    clazz.getDeclaredMethod("calculate", (Class<?>[]) null);
                 output = (Double) calculate.invoke(null, (Object[]) null);
-                System.err.println("noncasted output = " + calculate.invoke(null, (Object[]) null));
-                System.err.println("output = " + output);
-                System.err.println();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } finally {
-                // maybe this will do it?
-                System.gc();
+            } catch (MalformedURLException e) { e.printStackTrace();
+            } catch (ClassNotFoundException e) { e.printStackTrace();
+            } catch (NoSuchMethodException e) { e.printStackTrace();
+            } catch (IllegalAccessException e) { e.printStackTrace();
+            } catch (IllegalArgumentException e) { e.printStackTrace();
+            } catch (InvocationTargetException e) { e.printStackTrace();
             }
         }
     }
